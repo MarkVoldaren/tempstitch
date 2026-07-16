@@ -1,0 +1,363 @@
+:root {
+  --bg: #f6f2ea;
+  --card: #fffaf3;
+  --card-muted: #f1e7da;
+  --text: #2d241f;
+  --text-muted: #6d635c;
+  --border: #dfd1c0;
+  --accent: #b56576;
+  --accent-strong: #8f4259;
+  --danger: #b74a4a;
+  --info: #e7f0fb;
+  --warning: #fff3cf;
+  --shadow: 0 18px 40px rgba(75, 55, 39, 0.08);
+}
+
+:root[data-theme="dark"] {
+  --bg: #1c1714;
+  --card: #26201c;
+  --card-muted: #312924;
+  --text: #f5ede6;
+  --text-muted: #b6a99c;
+  --border: #4b4037;
+  --accent: #e39baa;
+  --accent-strong: #f0b8c2;
+  --danger: #ef7f7f;
+  --info: #1f2f42;
+  --warning: #47391c;
+  --shadow: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+body {
+  min-height: 100vh;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  border-right: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 90%, white 10%);
+}
+
+.sidebarTitle,
+.pageTitle,
+.projectTitle,
+.sectionTitle {
+  margin: 0;
+}
+
+.sidebarTitle {
+  font-size: 1.75rem;
+  line-height: 1.15;
+}
+
+.pageTitle {
+  font-size: 2rem;
+}
+
+.pageCopy,
+.sidebarCopy,
+.mutedText,
+.metaText {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.navList,
+.stackLg,
+.stackMd,
+.stackSm {
+  display: flex;
+  flex-direction: column;
+}
+
+.navList {
+  gap: 0.6rem;
+}
+
+.navLink,
+.chip,
+.ghostButton,
+.secondaryButton,
+.primaryButton,
+.dangerButton {
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: 140ms ease;
+}
+
+.navLink {
+  padding: 0.8rem 1rem;
+  background: transparent;
+}
+
+.navLink.active {
+  background: var(--card-muted);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border) 55%);
+}
+
+.sidebarFooter,
+.stackLg {
+  gap: 1rem;
+}
+
+.themeRow,
+.toolbar,
+.inlineField,
+.inlineActions,
+.wizardActions,
+.projectActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.chip,
+.ghostButton,
+.secondaryButton,
+.primaryButton,
+.dangerButton {
+  padding: 0.75rem 1rem;
+  background: transparent;
+}
+
+.chip.active,
+.secondaryButton {
+  background: var(--card-muted);
+}
+
+.primaryButton {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+}
+
+.dangerButton {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: white;
+}
+
+.mainContent {
+  padding: 2rem;
+}
+
+.card,
+.heroCard,
+.projectCard {
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+}
+
+.heroCard {
+  padding: 1.5rem;
+}
+
+.projectGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.projectCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.archivedRow,
+.rangeRow,
+.usageRow,
+.previewRow,
+.buildRow,
+.legendItem,
+.locationResult {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.archivedRow,
+.usageRow,
+.previewRow,
+.buildRow,
+.rangeRow {
+  justify-content: space-between;
+}
+
+.legendPreview,
+.blanketPreview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.blanketPreview {
+  max-height: 28rem;
+  overflow: auto;
+}
+
+.swatch,
+.previewSwatch {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.previewSwatch {
+  width: 2.5rem;
+  min-width: 2.5rem;
+  height: 0.8rem;
+  border-radius: 999px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.grid2,
+.reviewGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--card);
+  color: var(--text);
+  padding: 0.85rem 1rem;
+}
+
+.textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.banner {
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  padding: 1rem;
+}
+
+.banner.info {
+  background: var(--info);
+}
+
+.banner.warning {
+  background: var(--warning);
+}
+
+.banner.danger {
+  background: color-mix(in srgb, var(--danger) 14%, var(--card) 86%);
+}
+
+.locationResult {
+  justify-content: space-between;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 0.85rem 1rem;
+  background: var(--card);
+}
+
+.locationResult.active,
+.stepChip.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--card) 88%);
+}
+
+.stepRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.stepChip {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.55rem 0.8rem;
+  color: var(--text-muted);
+}
+
+.inlineLink {
+  display: inline-flex;
+  align-self: flex-start;
+}
+
+.colorInput {
+  max-width: 4rem;
+  padding: 0.2rem;
+}
+
+@media (max-width: 900px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mainContent {
+    padding: 1rem;
+  }
+
+  .grid2,
+  .reviewGrid {
+    grid-template-columns: 1fr;
+  }
+}

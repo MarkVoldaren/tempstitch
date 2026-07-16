@@ -1,0 +1,4 @@
+tempstitch.jays-apps.com {
+    encode gzip zstd
+    reverse_proxy tempstitch-app:3000
+}

@@ -1,0 +1,16 @@
+.git
+.gitignore
+.next
+**/.next
+node_modules
+**/node_modules
+*.log
+.env
+.env.*
+!.env.example
+apps/mobile/.expo
+apps/mobile/android
+apps/mobile/ios
+coverage
+deployment
+README.md
