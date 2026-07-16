@@ -30,6 +30,19 @@ A parallel mobile + web workspace for planning, previewing, and building tempera
   - `/login`
 - Supabase schema scaffold for normalized cloud persistence in `apps/web/supabase/schema.sql`
 
+## Web feature parity
+
+The responsive web app now includes the complete crafting workflow from mobile:
+
+- Six-step create/edit wizard with weather preview, draft recovery, yarn preferences, and safe regeneration warnings
+- Controlled color-range editor with normalization, gap/overlap validation, drag reorder, auto-generated bands, and yarn alternates
+- Full blanket, row-detail, and yearly heatmap previews with texture, zoom, month markers, stats, and palette usage
+- Queue and Focus build modes with next-five rows, completed history, sticky completion, persistent progress, and undo
+- Import/export, weather re-sync, duplicate, archive/restore, reset, delete confirmations, and theme controls
+- Two seeded demo projects on first use; subsequent projects persist in versioned browser local storage
+
+Google Play support purchases remain mobile-only. Supabase authentication and cross-device sync remain prepared but disabled for the current web release.
+
 ## Run locally
 
 1. Install workspace dependencies:
@@ -54,6 +67,12 @@ npm run dev:web
 
 ```bash
 npm run typecheck
+```
+
+5. Run the web regression tests:
+
+```bash
+npm run test --workspace @temperature-blanket/web
 ```
 
 ## Web environment

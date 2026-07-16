@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 
 import { useAuth } from "@/providers/AuthProvider";
 import { useTheme } from "@/providers/ThemeProvider";
@@ -13,11 +13,21 @@ const navItems = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const params = useParams<{ id?: string }>();
   const { configured, user, signOut } = useAuth();
   const { mode, setMode } = useTheme();
 
+  const projectId = params?.id;
+  const projectNav = projectId ? [
+    { href: `/app/projects/${projectId}/preview`, label: "Preview" },
+    { href: `/app/projects/${projectId}/build`, label: "Build" },
+    { href: `/app/projects/${projectId}/colors`, label: "Colors" },
+    { href: `/app/projects/${projectId}/settings`, label: "Settings" },
+  ] : [];
+
   return (
     <div className="shell">
+      <header className="mobileHeader"><div><p className="eyebrow">StitchForecast</p><strong>Temp Stitch</strong></div><Link className="primaryButton compact" href="/app/projects/new">New</Link></header>
       <aside className="sidebar">
         <div>
           <p className="eyebrow">StitchForecast</p>
@@ -38,6 +48,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {item.label}
             </Link>
           ))}
+          {projectNav.length ? <div className="navDivider" /> : null}
+          {projectNav.map((item) => <Link key={item.href} className={pathname === item.href ? "navLink active" : "navLink"} href={item.href}>{item.label}</Link>)}
         </nav>
 
         <div className="sidebarFooter">
@@ -52,7 +64,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               Dark
             </button>
           </div>
-          <p className="metaText">{configured ? user?.email ?? "Signed out" : "Demo mode"}</p>
+          <p className="metaText">{configured ? user?.email ?? "Signed out" : "Local data"}</p>
           {configured ? (
             <button className="ghostButton" onClick={() => void signOut()} type="button">
               Sign out
@@ -62,6 +74,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <main className="mainContent">{children}</main>
+      <nav className="bottomNav"><Link href="/app/projects">Projects</Link>{projectNav.slice(0, 3).map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}{!projectId ? <Link href="/app/projects/new">New</Link> : null}</nav>
     </div>
   );
 }

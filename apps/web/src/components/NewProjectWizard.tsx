@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { autoGenerateRanges, type LocationSuggestion, type ProjectDraftInput, type TemperatureRangeColor } from "@temperature-blanket/core";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { applyYarnRecommendationsToRanges, autoGenerateRanges, getProjectRanges, getTemperatureSpan, hasProjectWeatherSettingsChanged, yarnCatalogService, type FetchWeatherResult, type LocationSuggestion, type ProjectDraftInput, type TemperatureRangeColor } from "@temperature-blanket/core";
 
 import { useAppData } from "@/providers/AppDataProvider";
 
@@ -19,44 +20,62 @@ type DraftState = Omit<ProjectDraftInput, "location"> & {
   bandCount: number;
 };
 
-export function NewProjectWizard() {
-  const { saveProject, searchLocations, previewWeather } = useAppData();
+export function NewProjectWizard({ projectId }: { projectId?: string }) {
+  const router = useRouter();
+  const { data, saveProject, searchLocations, previewWeather } = useAppData();
+  const existingProject = data.projects.find((project) => project.id === projectId);
+  const existingRanges = projectId ? getProjectRanges(projectId, data.ranges) : [];
   const [step, setStep] = useState(0);
   const [locationQuery, setLocationQuery] = useState("");
   const [locationResults, setLocationResults] = useState<LocationSuggestion[]>([]);
   const [weatherError, setWeatherError] = useState<string | null>(null);
+  const [weatherPreview, setWeatherPreview] = useState<FetchWeatherResult | null>(null);
+  const [rangeMode, setRangeMode] = useState<"fullYear" | "custom">("fullYear");
+  const [confirmRegeneration, setConfirmRegeneration] = useState(false);
   const [creating, setCreating] = useState(false);
   const [draft, setDraft] = useState<DraftState>({
-    name: "",
-    location: null,
-    unit: "fahrenheit",
-    tempMode: "avg",
-    startDate: `${new Date().getFullYear() - 1}-01-01`,
-    endDate: `${new Date().getFullYear() - 1}-12-31`,
-    stitchesPerRow: 180,
-    rowHeight: 12,
-    craftType: "crochet",
-    stitchName: "Single crochet",
-    previewOrientation: "horizontal",
-    notes: "",
-    allowRangeGaps: false,
-    preferredYarnBrandId: null,
-    recommendationMode: "exact-nearest",
-    ranges: [],
-    bandCount: 8,
+    id: existingProject?.id,
+    name: existingProject?.name ?? "",
+    location: existingProject ? { query: existingProject.locationName, name: existingProject.locationName, latitude: existingProject.latitude, longitude: existingProject.longitude } : null,
+    unit: existingProject?.unit ?? "fahrenheit", tempMode: existingProject?.tempMode ?? "avg",
+    startDate: existingProject?.startDate ?? `${new Date().getFullYear() - 1}-01-01`, endDate: existingProject?.endDate ?? `${new Date().getFullYear() - 1}-12-31`,
+    stitchesPerRow: existingProject?.stitchesPerRow ?? 180, rowHeight: existingProject?.rowHeight ?? 12,
+    craftType: existingProject?.craftType ?? "crochet", stitchName: existingProject?.stitchName ?? "Single crochet",
+    previewOrientation: existingProject?.previewOrientation ?? "horizontal", notes: existingProject?.notes ?? "",
+    allowRangeGaps: existingProject?.allowRangeGaps ?? false, preferredYarnBrandId: existingProject?.preferredYarnBrandId ?? null,
+    recommendationMode: existingProject?.recommendationMode ?? "exact-nearest", ranges: existingRanges,
+    bandCount: existingRanges.length || 8,
   });
+
+  const draftKey = `tempstitch:setup-draft:${projectId ?? "new"}`;
+  useEffect(() => { const raw = window.sessionStorage.getItem(draftKey); if (raw) { try { setDraft(JSON.parse(raw) as DraftState); } catch { window.sessionStorage.removeItem(draftKey); } } }, [draftKey]);
+  useEffect(() => {
+    if (!existingProject || draft.id === existingProject.id) return;
+    setDraft({
+      id: existingProject.id, name: existingProject.name,
+      location: { query: existingProject.locationName, name: existingProject.locationName, latitude: existingProject.latitude, longitude: existingProject.longitude },
+      unit: existingProject.unit, tempMode: existingProject.tempMode, startDate: existingProject.startDate, endDate: existingProject.endDate,
+      stitchesPerRow: existingProject.stitchesPerRow, rowHeight: existingProject.rowHeight, craftType: existingProject.craftType,
+      stitchName: existingProject.stitchName, previewOrientation: existingProject.previewOrientation, notes: existingProject.notes ?? "",
+      allowRangeGaps: existingProject.allowRangeGaps, preferredYarnBrandId: existingProject.preferredYarnBrandId ?? null,
+      recommendationMode: existingProject.recommendationMode, ranges: existingRanges, bandCount: existingRanges.length || 8,
+    });
+    setLocationQuery(existingProject.locationName);
+  }, [draft.id, existingProject, existingRanges]);
+  useEffect(() => { window.sessionStorage.setItem(draftKey, JSON.stringify(draft)); }, [draft, draftKey]);
 
   const reviewRanges = useMemo<TemperatureRangeColor[]>(() => {
     if (!draft.location) {
       return [];
     }
 
-    return autoGenerateRanges(
+    const generated = autoGenerateRanges(
       "preview-project",
-      { min: 0, max: 100 },
+      weatherPreview ? getTemperatureSpan(weatherPreview.daily) ?? { min: 0, max: 100 } : { min: 0, max: 100 },
       draft.bandCount,
     );
-  }, [draft.bandCount, draft.location]);
+    return applyYarnRecommendationsToRanges(generated, { brandId: draft.preferredYarnBrandId, recommendationMode: draft.recommendationMode, preserveLocked: false });
+  }, [draft.bandCount, draft.location, draft.preferredYarnBrandId, draft.recommendationMode, weatherPreview]);
 
   async function handleSearchLocations() {
     const results = await searchLocations(locationQuery);
@@ -68,6 +87,7 @@ export function NewProjectWizard() {
       return;
     }
 
+    if (existingProject && hasProjectWeatherSettingsChanged(existingProject, { locationName: draft.location.name, latitude: draft.location.latitude, longitude: draft.location.longitude, startDate: draft.startDate, endDate: draft.endDate, tempMode: draft.tempMode }) && !confirmRegeneration) { setConfirmRegeneration(true); return; }
     setCreating(true);
     setWeatherError(null);
 
@@ -82,8 +102,9 @@ export function NewProjectWizard() {
     };
 
     try {
-      await saveProject(baseInput, { fallbackMode: "none" });
-      window.location.href = "/app/projects";
+      const result = await saveProject(baseInput, { fallbackMode: "none" });
+      window.sessionStorage.removeItem(draftKey);
+      router.push(`/app/projects/${result.projectId}/preview`);
     } catch (error) {
       setWeatherError(error instanceof Error ? error.message : "Unable to create project.");
     } finally {
@@ -108,8 +129,9 @@ export function NewProjectWizard() {
     };
 
     try {
-      await saveProject(baseInput, { fallbackMode: "mockOnly" });
-      window.location.href = "/app/projects";
+      const result = await saveProject(baseInput, { fallbackMode: "mockOnly" });
+      window.sessionStorage.removeItem(draftKey);
+      router.push(`/app/projects/${result.projectId}/preview`);
     } finally {
       setCreating(false);
     }
@@ -137,7 +159,7 @@ export function NewProjectWizard() {
 
         {step === 0 ? (
           <div className="stackMd">
-            <h2 className="sectionTitle">Project basics</h2>
+            <h2 className="sectionTitle">{existingProject ? "Edit project basics" : "Project basics"}</h2>
             <label className="field">
               <span>Project name</span>
               <input
@@ -207,6 +229,7 @@ export function NewProjectWizard() {
         {step === 2 ? (
           <div className="stackMd">
             <h2 className="sectionTitle">Date range + temperature mode</h2>
+            <div className="segmented"><button className={rangeMode === "fullYear" ? "segment active" : "segment"} onClick={() => { setRangeMode("fullYear"); const year = draft.startDate.slice(0, 4); setDraft((current) => ({ ...current, startDate: `${year}-01-01`, endDate: `${year}-12-31` })); }} type="button">Full year</button><button className={rangeMode === "custom" ? "segment active" : "segment"} onClick={() => setRangeMode("custom")} type="button">Custom dates</button></div>
             <div className="grid2">
               <label className="field">
                 <span>Start date</span>
@@ -239,6 +262,7 @@ export function NewProjectWizard() {
                 <option value="low">Daily low</option>
               </select>
             </label>
+            <label className="field"><span>Unit</span><select className="input" value={draft.unit} onChange={(event) => setDraft((current) => ({ ...current, unit: event.target.value as DraftState["unit"] }))}><option value="fahrenheit">Fahrenheit</option><option value="celsius">Celsius</option></select></label>
             <button
               className="secondaryButton"
               onClick={() => {
@@ -249,7 +273,7 @@ export function NewProjectWizard() {
                   ...draft,
                   location: draft.location,
                   ranges: [],
-                } as ProjectDraftInput);
+                } as ProjectDraftInput).then(setWeatherPreview).catch((error) => setWeatherError(error instanceof Error ? error.message : "Weather preview failed."));
               }}
               type="button"
             >
@@ -273,6 +297,8 @@ export function NewProjectWizard() {
                   <option value="knit">Knit</option>
                 </select>
               </label>
+              <label className="field"><span>Preview orientation</span><select className="input" value={draft.previewOrientation} onChange={(event) => setDraft((current) => ({ ...current, previewOrientation: event.target.value as DraftState["previewOrientation"] }))}><option value="horizontal">Horizontal rows</option><option value="vertical">Vertical strips</option></select></label>
+              <label className="field"><span>Stitch preset</span><select className="input" value={draft.stitchName} onChange={(event) => setDraft((current) => ({ ...current, stitchName: event.target.value }))}><option>Single crochet</option><option>Double crochet</option><option>Garter</option><option>Stockinette</option></select></label>
               <label className="field">
                 <span>Stitch name</span>
                 <input
@@ -308,6 +334,7 @@ export function NewProjectWizard() {
         {step === 4 ? (
           <div className="stackMd">
             <h2 className="sectionTitle">Color ranges</h2>
+            <div className="grid2"><label className="field"><span>Preferred yarn brand</span><select className="input" value={draft.preferredYarnBrandId ?? ""} onChange={(event) => setDraft((current) => ({ ...current, preferredYarnBrandId: event.target.value || null }))}><option value="">None</option>{yarnCatalogService.getBrands().map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}</select></label><label className="field"><span>Recommendation mode</span><select className="input" value={draft.recommendationMode} onChange={(event) => setDraft((current) => ({ ...current, recommendationMode: event.target.value as DraftState["recommendationMode"] }))}><option value="exact-nearest">Nearest match</option><option value="brand-palette-only">Brand palette</option><option value="manual-only">Manual only</option></select></label></div>
             <label className="field">
               <span>Auto-generated bands</span>
               <select
@@ -328,6 +355,7 @@ export function NewProjectWizard() {
                 </div>
               ))}
             </div>
+            {weatherPreview ? <div className="banner info">{weatherPreview.providerLabel}: {weatherPreview.daily.length} days loaded. Bands use the actual temperature span.</div> : <div className="banner warning">Preview weather in the previous step to generate bands from the actual temperature span.</div>}
           </div>
         ) : null}
 
@@ -358,8 +386,9 @@ export function NewProjectWizard() {
                 </div>
               </div>
             ) : null}
+            {confirmRegeneration ? <div className="banner warning"><strong>Weather settings changed.</strong><p>Saving will rebuild daily rows. Completed dates that still exist will remain complete.</p><div className="inlineActions"><button className="dangerButton" onClick={() => void handleCreate()} type="button">Rebuild and save</button><button className="ghostButton" onClick={() => setConfirmRegeneration(false)} type="button">Cancel</button></div></div> : null}
             <button className="primaryButton" disabled={creating} onClick={() => void handleCreate()} type="button">
-              {creating ? "Creating..." : "Create project"}
+              {creating ? "Saving..." : existingProject ? "Save project" : "Create project"}
             </button>
           </div>
         ) : null}
@@ -381,6 +410,7 @@ export function NewProjectWizard() {
           >
             Next
           </button>
+          <button className="ghostButton" onClick={() => { window.sessionStorage.removeItem(draftKey); router.push(existingProject ? `/app/projects/${existingProject.id}/settings` : "/app/projects"); }} type="button">Cancel setup</button>
         </div>
       </section>
     </div>

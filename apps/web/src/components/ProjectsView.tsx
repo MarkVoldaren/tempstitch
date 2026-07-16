@@ -1,101 +1,40 @@
 "use client";
 
 import Link from "next/link";
-
+import { useRef, useState } from "react";
 import { getActiveProjects, getArchivedProjects, getProjectCompletion } from "@temperature-blanket/core";
-
+import { Banner, ProgressHeader } from "./WebUi";
 import { useAppData } from "@/providers/AppDataProvider";
-import { useAuth } from "@/providers/AuthProvider";
 
 export function ProjectsView() {
-  const { configured } = useAuth();
-  const { data, error, initializing } = useAppData();
+  const { data, error, importProjectsFromJson, initializing } = useAppData();
+  const [showImport, setShowImport] = useState(false);
+  const [importJson, setImportJson] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
   const activeProjects = getActiveProjects(data.projects);
   const archivedProjects = getArchivedProjects(data.projects);
 
-  return (
-    <div className="stackLg">
-      <section className="heroCard">
-        <p className="eyebrow">Responsive web workspace</p>
-        <h2 className="pageTitle">Your blanket projects, now on the web</h2>
-        <p className="pageCopy">
-          The web app uses the same weather, temperature, and yarn logic as mobile,
-          with a wider workspace for planning and row tracking.
-        </p>
-        {!configured ? (
-          <div className="banner info">
-            Supabase is not configured yet, so this web app is running in demo/local mode.
-          </div>
-        ) : null}
-        {error ? <div className="banner danger">{error}</div> : null}
-      </section>
+  async function runImport(payload: string) {
+    try {
+      const count = await importProjectsFromJson(payload);
+      setMessage(`Imported ${count} project${count === 1 ? "" : "s"}.`);
+      setImportJson("");
+      setShowImport(false);
+    } catch (cause) {
+      setMessage(cause instanceof Error ? cause.message : "Unable to import that file.");
+    }
+  }
 
-      <div className="toolbar">
-        <Link className="primaryButton" href="/app/projects/new">
-          Create Project
-        </Link>
-      </div>
-
-      {initializing ? <div className="card">Loading projects…</div> : null}
-
-      {!initializing && activeProjects.length === 0 ? (
-        <div className="card">
-          <h3 className="sectionTitle">No active projects yet</h3>
-          <p className="mutedText">
-            Create your first web project to fetch weather, map yarn colors, and
-            track your blanket row by row.
-          </p>
-        </div>
-      ) : null}
-
-      <div className="projectGrid">
-        {activeProjects.map((project) => {
-          const completion = getProjectCompletion(project.id, data.progressRows);
-
-          return (
-            <article className="projectCard" key={project.id}>
-              <div className="stackSm">
-                <p className="eyebrow">{project.locationName}</p>
-                <h3 className="projectTitle">{project.name}</h3>
-                <p className="mutedText">
-                  {project.startDate} to {project.endDate}
-                </p>
-                <p className="mutedText">
-                  {completion.completed} of {completion.total} rows complete
-                </p>
-              </div>
-              <div className="projectActions">
-                <Link className="secondaryButton" href={`/app/projects/${project.id}/preview`}>
-                  Preview
-                </Link>
-                <Link className="secondaryButton" href={`/app/projects/${project.id}/build`}>
-                  Build
-                </Link>
-                <Link className="secondaryButton" href={`/app/projects/${project.id}/settings`}>
-                  Settings
-                </Link>
-              </div>
-            </article>
-          );
-        })}
-      </div>
-
-      {archivedProjects.length > 0 ? (
-        <section className="card stackMd">
-          <h3 className="sectionTitle">Archived projects</h3>
-          {archivedProjects.map((project) => (
-            <div className="archivedRow" key={project.id}>
-              <div>
-                <strong>{project.name}</strong>
-                <p className="mutedText">{project.locationName}</p>
-              </div>
-              <Link className="secondaryButton" href={`/app/projects/${project.id}/settings`}>
-                Open
-              </Link>
-            </div>
-          ))}
-        </section>
-      ) : null}
-    </div>
-  );
+  return <div className="stackLg">
+    <section className="heroCard heroSplit"><div><p className="eyebrow">Your yarn forecast</p><h2 className="pageTitle">Blankets in progress</h2><p className="pageCopy">Plan the palette, see the whole year, then work one calm row at a time.</p></div><div className="heroKnot" aria-hidden="true">365</div></section>
+    {error ? <Banner tone="danger">{error}</Banner> : null}
+    {message ? <Banner tone={message.startsWith("Imported") ? "success" : "warning"}>{message}</Banner> : null}
+    <div className="toolbar"><Link className="primaryButton" href="/app/projects/new">Create project</Link><button className="secondaryButton" onClick={() => setShowImport((value) => !value)} type="button">Import JSON</button></div>
+    {showImport ? <section className="card stackMd"><h3 className="sectionTitle">Import a project</h3><p className="mutedText">Paste a mobile or web export, or choose a JSON file. Imported IDs are regenerated safely.</p><textarea className="input textarea" onChange={(event) => setImportJson(event.target.value)} placeholder="Paste project JSON" value={importJson} /><input accept="application/json,.json" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) void file.text().then(runImport); }} ref={fileInput} type="file"/><div className="inlineActions"><button className="primaryButton" disabled={!importJson.trim()} onClick={() => void runImport(importJson)} type="button">Import pasted JSON</button><button className="secondaryButton" onClick={() => fileInput.current?.click()} type="button">Choose file</button></div></section> : null}
+    {initializing ? <div className="card">Loading your projects...</div> : null}
+    <div className="projectGrid">{activeProjects.map((project) => { const completion = getProjectCompletion(project.id, data.progressRows); return <article className="projectCard" key={project.id}><div className="projectCardTop"><div><p className="eyebrow">{project.locationName}</p><h3 className="projectTitle">{project.name}</h3></div><span className={`sourceBadge ${project.weatherSource}`}>{project.weatherSourceLabel}</span></div><p className="mutedText">{project.startDate} to {project.endDate} · {project.craftType} · {project.stitchName}</p><ProgressHeader {...completion}/><div className="projectActions"><Link className="primaryButton" href={`/app/projects/${project.id}/build`}>Build</Link><Link className="secondaryButton" href={`/app/projects/${project.id}/preview`}>Preview</Link><Link className="ghostButton" href={`/app/projects/${project.id}/settings`}>Settings</Link></div></article>; })}</div>
+    {!initializing && activeProjects.length === 0 ? <div className="card emptyState"><h3 className="sectionTitle">No active blankets</h3><p className="mutedText">Start a new project or restore one from the archive.</p></div> : null}
+    {archivedProjects.length ? <section className="card stackMd"><h3 className="sectionTitle">Archived projects</h3>{archivedProjects.map((project) => <div className="archivedRow" key={project.id}><div><strong>{project.name}</strong><p className="mutedText">{project.locationName}</p></div><Link className="secondaryButton" href={`/app/projects/${project.id}/settings`}>Manage</Link></div>)}</section> : null}
+  </div>;
 }

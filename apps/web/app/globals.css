@@ -11,6 +11,7 @@
   --info: #e7f0fb;
   --warning: #fff3cf;
   --shadow: 0 18px 40px rgba(75, 55, 39, 0.08);
+  --success: #39755a;
 }
 
 :root[data-theme="dark"] {
@@ -40,6 +41,12 @@ body {
   color: var(--text);
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
+
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 2px; }
+button:disabled { cursor: not-allowed; opacity: .48; }
+.mobileHeader, .bottomNav { display: none; }
+.navDivider { height: 1px; background: var(--border); margin: .4rem 0; }
+.compact { padding: .55rem .85rem; }
 
 a {
   color: inherit;
@@ -304,6 +311,90 @@ body {
 .banner.danger {
   background: color-mix(in srgb, var(--danger) 14%, var(--card) 86%);
 }
+.banner.success { background: color-mix(in srgb, var(--success) 14%, var(--card) 86%); }
+.heroSplit, .projectCardTop, .sectionHeading, .detailHeader, .previewToolbar, .buildControls { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.heroKnot { display: grid; place-items: center; width: 5rem; height: 5rem; flex: 0 0 auto; border: 8px double color-mix(in srgb, var(--accent) 70%, var(--card)); border-radius: 45% 55% 48% 52%; color: var(--accent-strong); font-weight: 900; transform: rotate(-7deg); }
+.sourceBadge { display: inline-flex; align-items: center; width: fit-content; padding: .3rem .65rem; border-radius: 999px; background: var(--card-muted); color: var(--text-muted); font-size: .75rem; font-weight: 800; }
+.sourceBadge.mock { background: var(--warning); }
+.projectCardTop { align-items: flex-start; }
+.progressCard { display: grid; gap: .65rem; }
+.progressCard > div:first-child { display: flex; justify-content: space-between; gap: 1rem; }
+.progressCard span { color: var(--text-muted); }
+.progressTrack { height: .65rem; overflow: hidden; border-radius: 999px; background: var(--card-muted); }
+.progressTrack > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), #d8926f); }
+.segmented { display: inline-flex; width: fit-content; padding: .25rem; border: 1px solid var(--border); border-radius: 999px; background: var(--card-muted); }
+.segment { min-height: 2.65rem; padding: .55rem .9rem; border: 0; border-radius: 999px; background: transparent; color: var(--text-muted); cursor: pointer; }
+.segment.active { background: var(--card); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.dialogBackdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 1rem; background: rgba(25, 18, 14, .62); }
+.dialogCard { width: min(34rem, 100%); max-height: 85vh; overflow: auto; padding: 1.4rem; border: 1px solid var(--border); border-radius: 1.4rem; background: var(--card); box-shadow: 0 28px 70px rgba(0,0,0,.3); }
+.end { justify-content: flex-end; }
+.toast { position: fixed; z-index: 60; right: 1rem; bottom: 1rem; display: flex; align-items: center; gap: .8rem; padding: .9rem 1rem; border-radius: 1rem; background: var(--text); color: var(--card); box-shadow: var(--shadow); }
+.toast button { border: 0; background: transparent; color: inherit; font-weight: 800; cursor: pointer; }
+.yarnSwatchGroup { position: relative; display: inline-flex; min-width: 3.25rem; }
+.yarnSwatchGroup .swatch { width: 2rem; height: 2rem; }
+.yarnSwatchGroup .yarn { margin-left: -.65rem; margin-top: .55rem; border: 2px solid var(--card); }
+.detailHeader { align-items: flex-end; }
+.legendBar { display: flex; min-height: 3rem; overflow: hidden; border: 1px solid var(--border); border-radius: 1rem; }
+.legendBar > div { flex: 1; min-width: 1rem; }
+.toggleRow { display: flex; align-items: center; gap: .8rem; padding: 1rem; border: 1px solid var(--border); border-radius: 1rem; background: var(--card); }
+.toggleRow input { width: 1.4rem; height: 1.4rem; accent-color: var(--accent); }
+.toggleRow span { display: grid; gap: .2rem; }
+.toggleRow small, .recommendation small, .queueMain small, .statCard small, .usageCard small, .detailRow small, .yarnOption small { display: block; color: var(--text-muted); }
+.rangeEditor { display: grid; grid-template-columns: auto 9rem 1fr; gap: 1rem; align-items: start; padding: 1rem; border: 1px solid var(--border); border-radius: 1.25rem; background: var(--card); box-shadow: var(--shadow); }
+.dragHandle { padding: .7rem .2rem; color: var(--text-muted); cursor: grab; writing-mode: vertical-rl; }
+.colorPair { display: grid; grid-template-columns: 3.2rem 1fr; gap: .4rem; }
+.colorPair input[type="color"] { width: 3.2rem; height: 3.2rem; padding: .15rem; border: 1px solid var(--border); border-radius: .8rem; background: var(--card); }
+.hexInput { grid-column: 1 / -1; padding: .55rem; }
+.rangeFields { display: grid; grid-template-columns: 6rem 6rem 1fr 1fr; gap: .7rem; }
+.rangeFields label { display: grid; gap: .35rem; color: var(--text-muted); font-size: .8rem; font-weight: 700; }
+.rangeFields .wide { grid-column: 1 / -1; }
+.recommendation { grid-column: 2 / -1; display: flex; align-items: center; gap: .8rem; padding-top: .8rem; border-top: 1px solid var(--border); }
+.recommendation > div { flex: 1; }
+.iconButton { display: inline-grid; place-items: center; min-width: 2.6rem; min-height: 2.6rem; border: 1px solid var(--border); border-radius: 50%; background: transparent; color: var(--text); cursor: pointer; font-size: 1.2rem; }
+.addBand { align-self: flex-start; }
+.stickyActions { position: sticky; z-index: 20; bottom: 1rem; display: flex; flex-wrap: wrap; gap: .7rem; padding: .8rem; border: 1px solid var(--border); border-radius: 1.2rem; background: color-mix(in srgb, var(--card) 92%, transparent); box-shadow: 0 14px 40px rgba(0,0,0,.16); backdrop-filter: blur(14px); }
+.yarnOption { display: flex; align-items: center; gap: 1rem; width: 100%; padding: .85rem; border: 1px solid var(--border); border-radius: 1rem; background: var(--card); color: var(--text); text-align: left; cursor: pointer; }
+.previewToolbar, .buildControls { align-items: flex-end; flex-wrap: wrap; }
+.zoomControl { display: flex; align-items: center; gap: .6rem; }
+.zoomControl button { width: 2.5rem; height: 2.5rem; border: 1px solid var(--border); border-radius: 50%; background: var(--card); color: var(--text); cursor: pointer; }
+.statsGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; }
+.statCard { display: grid; gap: .3rem; padding: 1rem; border: 1px solid var(--border); border-radius: 1.1rem; background: var(--card); }
+.statCard span { color: var(--text-muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+.statCard strong { font-size: 1.35rem; }
+.previewStage { min-height: 20rem; overflow: auto; }
+.blanketCanvas { display: flex; flex-direction: column; min-width: 18rem; }
+.blanketCanvas.vertical { flex-direction: row; min-height: 28rem; }
+.blanketRow { position: relative; display: block; flex: 1; width: 100%; min-width: 2px; padding: 0; border: 0; cursor: pointer; content-visibility: auto; }
+.blanketCanvas.vertical .blanketRow { width: auto; height: auto !important; }
+.blanketCanvas.stitch .blanketRow { background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.13) 0 2px, rgba(0,0,0,.07) 2px 4px); }
+.monthMarker { position: absolute; z-index: 2; left: .35rem; top: 0; padding: .05rem .28rem; background: rgba(255,255,255,.82); color: #2d241f; font-size: .55rem; font-weight: 900; }
+.heatmap { display: grid; grid-template-columns: repeat(26, minmax(.65rem, 1fr)); gap: .25rem; }
+.heatmap button { aspect-ratio: 1; padding: 0; border: 1px solid color-mix(in srgb, var(--border) 60%, transparent); border-radius: .25rem; cursor: pointer; }
+.rowDetailList { display: grid; gap: .35rem; max-height: 36rem; overflow: auto; }
+.detailRow { display: grid; grid-template-columns: 3rem 1fr auto; align-items: center; gap: .8rem; padding: .55rem; border: 1px solid transparent; border-radius: .8rem; background: transparent; color: var(--text); text-align: left; cursor: pointer; content-visibility: auto; }
+.detailRow.active { border-color: var(--accent); background: var(--card-muted); }
+.rowRibbon { height: 1.4rem; border-radius: 999px; }
+.rowRibbon.stitch { background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.18) 0 2px, rgba(0,0,0,.08) 2px 4px); }
+.selectedRowCard { display: flex; align-items: center; gap: 1rem; }
+.usageGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .7rem; }
+.usageCard { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .75rem; padding: .75rem; border-radius: 1rem; background: var(--card-muted); }
+.queueList, .focusQueue { display: grid; gap: .75rem; }
+.queueRow { display: grid; grid-template-columns: 3rem 1rem 1fr auto; align-items: center; gap: .9rem; padding: 1rem; border: 1px solid var(--border); border-radius: 1.2rem; background: var(--card); box-shadow: var(--shadow); }
+.queueRow.featured { min-height: 15rem; grid-template-columns: 4rem 1.5rem 1fr auto; border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); }
+.queueRow.featured .queueMain strong { font-size: 1.65rem; }
+.completeToggle { width: 3rem; height: 3rem; border: 2px solid var(--accent); border-radius: 50%; background: transparent; color: white; font-size: 1.4rem; cursor: pointer; }
+.completeToggle.checked { background: var(--success); border-color: var(--success); }
+.queueSwatch { width: 1rem; align-self: stretch; border-radius: 999px; }
+.queueMain { display: grid; gap: .25rem; }
+.queueMeta { display: grid; gap: .25rem; text-align: right; }
+.queueMeta span { color: var(--text-muted); }
+.buildSticky { justify-content: center; }
+.wideButton { min-width: min(24rem, 100%); }
+.settingsGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.detailsList { display: grid; gap: .7rem; margin: 0; }
+.detailsList > div { display: grid; grid-template-columns: 9rem 1fr; gap: 1rem; padding-bottom: .6rem; border-bottom: 1px solid var(--border); }
+.detailsList dt { color: var(--text-muted); }
+.detailsList dd { margin: 0; font-weight: 700; }
 
 .locationResult {
   justify-content: space-between;
@@ -348,16 +439,43 @@ body {
   }
 
   .sidebar {
-    border-right: 0;
-    border-bottom: 1px solid var(--border);
+    display: none;
   }
 
+  .mobileHeader { position: sticky; z-index: 30; top: 0; display: flex; align-items: center; justify-content: space-between; padding: .8rem 1rem; border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--card) 92%, transparent); backdrop-filter: blur(14px); }
+  .mobileHeader .eyebrow { margin: 0; }
+  .bottomNav { position: fixed; z-index: 40; right: .75rem; bottom: .75rem; left: .75rem; display: flex; justify-content: space-around; padding: .45rem; border: 1px solid var(--border); border-radius: 1.1rem; background: color-mix(in srgb, var(--card) 94%, transparent); box-shadow: 0 16px 40px rgba(0,0,0,.2); backdrop-filter: blur(15px); }
+  .bottomNav a { padding: .7rem .6rem; font-size: .8rem; font-weight: 800; }
+
   .mainContent {
-    padding: 1rem;
+    padding: 1rem 1rem 6.5rem;
   }
 
   .grid2,
-  .reviewGrid {
+  .reviewGrid, .settingsGrid {
     grid-template-columns: 1fr;
   }
+  .rangeEditor { grid-template-columns: auto 1fr; }
+  .colorPair { grid-column: 2; }
+  .rangeFields, .recommendation { grid-column: 1 / -1; }
+  .rangeFields { grid-template-columns: 1fr 1fr; }
+  .rangeFields label:nth-child(n+3), .rangeFields .wide { grid-column: 1 / -1; }
+  .statsGrid { grid-template-columns: 1fr 1fr; }
+  .heatmap { grid-template-columns: repeat(13, 1fr); }
+  .queueRow, .queueRow.featured { grid-template-columns: 3rem 1rem 1fr; }
+  .queueMeta { grid-column: 3; text-align: left; }
+  .detailHeader { align-items: flex-start; }
+  .heroKnot { display: none; }
+  .toast { right: .75rem; bottom: 5.5rem; left: .75rem; }
+  .stickyActions { bottom: 5.4rem; }
+}
+
+@media (max-width: 520px) {
+  .pageTitle { font-size: 1.55rem; }
+  .card, .heroCard, .projectCard { padding: 1rem; border-radius: 1.15rem; }
+  .statsGrid { grid-template-columns: 1fr; }
+  .segmented { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; border-radius: 1rem; }
+  .segment { padding: .5rem; border-radius: .75rem; font-size: .76rem; }
+  .previewToolbar, .buildControls { display: grid; }
+  .projectActions > *, .stickyActions > * { flex: 1; text-align: center; }
 }
