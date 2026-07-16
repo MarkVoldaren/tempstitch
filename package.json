@@ -6,12 +6,10 @@
     "packages/*"
   ],
   "scripts": {
-    "dev:mobile": "npm run dev --workspace @temperature-blanket/mobile",
     "dev:web": "npm run dev --workspace @temperature-blanket/web",
     "typecheck:core": "tsc -p packages/core/tsconfig.json --noEmit",
-    "typecheck:mobile": "npm run typecheck --workspace @temperature-blanket/mobile",
     "typecheck:web": "npm run typecheck --workspace @temperature-blanket/web",
-    "typecheck": "npm run typecheck:core && npm run typecheck:mobile && npm run typecheck:web"
+    "typecheck": "npm run typecheck:core && npm run typecheck:web"
   },
   "devDependencies": {
     "typescript": "~5.9.2"

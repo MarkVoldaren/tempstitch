@@ -8,9 +8,7 @@ node_modules
 .env
 .env.*
 !.env.example
-apps/mobile/.expo
-apps/mobile/android
-apps/mobile/ios
+_local-backups
 coverage
 deployment
 README.md

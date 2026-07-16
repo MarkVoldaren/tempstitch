@@ -1,20 +1,17 @@
-# Temperature Blanket Workspace
+# Temp Stitch Web Workspace
 
-A parallel mobile + web workspace for planning, previewing, and building temperature blankets.
+A responsive web application for planning, previewing, and building temperature blankets.
 
 ## Workspace layout
 
-- `apps/mobile`
-  Existing Expo + React Native app, preserved as the mobile experience.
 - `apps/web`
-  New Next.js web app with a responsive desktop/tablet-first shell.
+  Next.js web app with responsive phone, tablet, and desktop layouts.
 - `packages/core`
   Shared domain types, weather services, yarn recommendation logic, temperature mapping, demo data, and serialization helpers.
 
 ## What is implemented
 
 - Workspace/monorepo structure with shared `core` package
-- Existing mobile app moved into `apps/mobile`
 - New web app scaffold in `apps/web`
 - Shared weather, yarn, temperature, date, project, and persistence logic extracted into `packages/core`
 - Web auth provider with Supabase-aware magic-link flow and demo fallback mode
@@ -51,25 +48,19 @@ Google Play support purchases remain mobile-only. Supabase authentication and cr
 npm install
 ```
 
-2. Start the mobile app:
-
-```bash
-npm run dev:mobile
-```
-
-3. Start the web app:
+2. Start the web app:
 
 ```bash
 npm run dev:web
 ```
 
-4. Run all typechecks:
+3. Run all typechecks:
 
 ```bash
 npm run typecheck
 ```
 
-5. Run the web regression tests:
+4. Run the web regression tests:
 
 ```bash
 npm run test --workspace @temperature-blanket/web
@@ -85,11 +76,6 @@ Copy `apps/web/.env.example` to `apps/web/.env.local` and set:
 If these are missing, the web app falls back to demo/local mode so the UI still runs.
 
 ## Persistence model
-
-### Mobile
-
-- Mobile still uses local persistence through AsyncStorage.
-- Google Play donation purchases remain mobile-only.
 
 ### Web
 
@@ -107,8 +93,8 @@ The web app already has a working shell and shared-data flow, but it is still an
 
 ## Notes
 
-- The mobile app remains supported and compile-checked in the workspace.
-- The web app intentionally does not carry over Google Play donations.
+- The retired Expo source may be retained locally under `_local-backups/mobile-app`, which is excluded from Git and Docker builds.
+- Google Play donations are not part of the web app.
 - Shared logic in `packages/core` is now standalone and no longer coupled to the old app-local alias structure.
 
 ## Production deployment
