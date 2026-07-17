@@ -2,6 +2,7 @@ import {
   AppData,
   BuildProgressRow,
   Project,
+  ProjectLocationAssignment,
   TemperatureDay,
   TemperatureRangeColor,
   WeatherDayRecord,
@@ -90,12 +91,19 @@ function makeProjectBundle(input: {
     allowRangeGaps: false,
     preferredYarnBrandId: input.preferredYarnBrandId ?? null,
     recommendationMode: input.recommendationMode ?? "exact-nearest",
+    colorScaleMode: "shared",
     weatherSource: "demo",
     weatherSourceLabel: "Demo data",
     weatherStatusMessage: "Seeded preview data for exploring the app.",
     archivedAt: null,
     createdAt: now,
     updatedAt: now,
+  };
+  const projectLocation: ProjectLocationAssignment = {
+    id: `${projectId}:location:1`, projectId, locationName: input.locationName,
+    latitude: input.latitude, longitude: input.longitude, startDate: input.startDate,
+    endDate: input.endDate, sortOrder: 0, weatherSource: "demo",
+    weatherSourceLabel: "Demo data", weatherStatusMessage: "Seeded preview data for exploring the app.",
   };
 
   const rawDays = createDemoWeatherRows(
@@ -120,11 +128,12 @@ function makeProjectBundle(input: {
       preserveLocked: false,
     },
   );
-  const temperatureDays = applyRangesToDays(project, rawDays, ranges);
+  const temperatureDays = applyRangesToDays(project, rawDays.map((day) => ({ ...day, projectLocationId: projectLocation.id })), ranges);
   const progressRows = createProgressRows(projectId, temperatureDays, input.completedCount);
 
   return {
     project,
+    projectLocation,
     ranges,
     temperatureDays,
     progressRows,
@@ -229,6 +238,7 @@ export function createDemoAppData(): AppData {
 
   return {
     projects: [rosewood.project, spruce.project],
+    projectLocations: [rosewood.projectLocation, spruce.projectLocation],
     ranges: [...rosewood.ranges, ...spruce.ranges],
     temperatureDays: [...rosewood.temperatureDays, ...spruce.temperatureDays],
     progressRows: [...rosewood.progressRows, ...spruce.progressRows],

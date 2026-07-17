@@ -7,10 +7,10 @@ export function SegmentedControl<T extends string>({ label, onChange, options, v
 }
 
 export function ProgressHeader({ completed, percent, total }: { completed: number; percent: number; total: number }) {
-  return <div className="progressCard"><div><strong>{percent}% complete</strong><span>{completed} of {total} rows</span></div><div className="progressTrack"><span style={{ width: `${percent}%` }} /></div></div>;
+  return <div className="progressCard"><div><strong>{percent}% complete</strong><span>{completed} of {total} rows</span></div><div aria-label={`${percent}% complete`} aria-valuemax={100} aria-valuemin={0} aria-valuenow={percent} className="progressTrack" role="progressbar"><span style={{ width: `${percent}%` }} /></div></div>;
 }
 
-export function Banner({ children, tone = "info" }: { children: ReactNode; tone?: "info" | "warning" | "danger" | "success" }) { return <div className={`banner ${tone}`}>{children}</div>; }
+export function Banner({ children, tone = "info" }: { children: ReactNode; tone?: "info" | "warning" | "danger" | "success" }) { const marks = { info: "i", warning: "!", danger: "!", success: "OK" }; return <div className={`banner ${tone}`}><span className="bannerMark" aria-hidden="true">{marks[tone]}</span><div>{children}</div></div>; }
 
 export function ConfirmDialog({ confirmLabel, danger, message, onCancel, onConfirm, open, title }: { confirmLabel: string; danger?: boolean; message: string; onCancel: () => void; onConfirm: () => void | Promise<void>; open: boolean; title: string }) {
   if (!open) return null;

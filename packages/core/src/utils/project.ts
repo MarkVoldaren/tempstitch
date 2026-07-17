@@ -36,6 +36,16 @@ export function getProjectRanges(
     .sort((left, right) => left.sortOrder - right.sortOrder);
 }
 
+export function getRangesForLocation(
+  projectId: string,
+  ranges: TemperatureRangeColor[],
+  projectLocationId: string | null,
+) {
+  return getProjectRanges(projectId, ranges).filter(
+    (range) => range.projectLocationId === projectLocationId,
+  );
+}
+
 export function getProjectDays(projectId: string, days: TemperatureDay[]) {
   return days
     .filter((day) => day.projectId === projectId)

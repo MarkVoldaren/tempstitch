@@ -7,6 +7,7 @@ export * from "./services/yarn";
 export * from "./types/models";
 export * from "./utils/color";
 export * from "./utils/date";
+export * from "./utils/locations";
 export * from "./utils/persistence";
 export * from "./utils/project";
 export * from "./utils/temperature";

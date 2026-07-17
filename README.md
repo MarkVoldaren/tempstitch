@@ -32,9 +32,11 @@ A responsive web application for planning, previewing, and building temperature 
 The responsive web app now includes the complete crafting workflow from mobile:
 
 - Six-step create/edit wizard with weather preview, draft recovery, yarn preferences, and safe regeneration warnings
+- Multi-location timelines with up to 12 consecutive location assignments and one full row per date
+- Shared project-wide color scales or independently editable palettes for each location
 - Controlled color-range editor with normalization, gap/overlap validation, drag reorder, auto-generated bands, and yarn alternates
-- Full blanket, row-detail, and yearly heatmap previews with texture, zoom, month markers, stats, and palette usage
-- Queue and Focus build modes with next-five rows, completed history, sticky completion, persistent progress, and undo
+- Full blanket, row-detail, and yearly heatmap previews with texture, zoom, month/location markers, per-location stats, and palette usage
+- Queue and Focus build modes with next-five rows, location transitions, completed history, sticky completion, persistent progress, and undo
 - Import/export, weather re-sync, duplicate, archive/restore, reset, delete confirmations, and theme controls
 - Two seeded demo projects on first use; subsequent projects persist in versioned browser local storage
 
@@ -80,6 +82,8 @@ If these are missing, the web app falls back to demo/local mode so the UI still 
 ### Web
 
 - Web uses a browser storage adapter when Supabase is not configured.
+- Persisted data schema version 4 adds project location assignments and migrates version-3 projects automatically.
+- Weather is fetched and cached independently for each location/date segment.
 - Web is prepared for a Supabase-backed normalized schema using:
   - `projects`
   - `temperature_ranges`
@@ -87,9 +91,7 @@ If these are missing, the web app falls back to demo/local mode so the UI still 
   - `build_progress_rows`
   - `weather_cache`
 
-## Current web scope
-
-The web app already has a working shell and shared-data flow, but it is still an MVP transition layer rather than a full parity rebuild. The key blanket flows are represented in the route structure and data provider, with room for deeper UX polish and broader editing behavior in later passes.
+Project JSON exports include location assignments, location-scoped temperature rows, and shared or per-location palettes. Older single-location exports remain importable and are upgraded automatically.
 
 ## Notes
 

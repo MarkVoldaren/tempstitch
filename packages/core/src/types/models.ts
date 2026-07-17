@@ -5,6 +5,7 @@ export type PreviewOrientation = "vertical" | "horizontal";
 export type WeatherDataSource = "open-meteo" | "mock" | "cached" | "demo";
 export type WeatherFallbackMode = "none" | "allowMock" | "mockOnly";
 export type RecommendationMode = "exact-nearest" | "brand-palette-only" | "manual-only";
+export type ColorScaleMode = "shared" | "per-location";
 
 export type LocationSuggestion = {
   id: string;
@@ -41,6 +42,7 @@ export type Project = {
   allowRangeGaps: boolean;
   preferredYarnBrandId?: string | null;
   recommendationMode: RecommendationMode;
+  colorScaleMode: ColorScaleMode;
   weatherSource: WeatherDataSource;
   weatherSourceLabel: string;
   weatherStatusMessage?: string | null;
@@ -49,9 +51,32 @@ export type Project = {
   updatedAt: string;
 };
 
+export type ProjectLocationAssignment = {
+  id: string;
+  projectId: string;
+  locationName: string;
+  latitude: number;
+  longitude: number;
+  startDate: string;
+  endDate: string;
+  sortOrder: number;
+  weatherSource: WeatherDataSource;
+  weatherSourceLabel: string;
+  weatherStatusMessage?: string | null;
+};
+
+export type ProjectLocationDraft = {
+  id?: string;
+  location: LocationDraft;
+  startDate: string;
+  endDate: string;
+  sortOrder: number;
+};
+
 export type TemperatureRangeColor = {
   id: string;
   projectId: string;
+  projectLocationId: string | null;
   minTemp: number;
   maxTemp: number;
   hexColor: string;
@@ -105,6 +130,7 @@ export type YarnRecommendation = {
 export type TemperatureDay = {
   id: string;
   projectId: string;
+  projectLocationId: string;
   date: string;
   tempHigh: number | null;
   tempLow: number | null;
@@ -131,6 +157,10 @@ export type WeatherDayRecord = {
   tempAvg: number | null;
 };
 
+export type LocatedWeatherDayRecord = WeatherDayRecord & {
+  projectLocationId: string;
+};
+
 export type WeatherSourceInfo = {
   source: WeatherDataSource;
   providerLabel: string;
@@ -153,6 +183,7 @@ export type WeatherCacheEntry = WeatherSourceInfo & {
 
 export type AppData = {
   projects: Project[];
+  projectLocations: ProjectLocationAssignment[];
   ranges: TemperatureRangeColor[];
   temperatureDays: TemperatureDay[];
   progressRows: BuildProgressRow[];
@@ -168,7 +199,7 @@ export type PersistedAppEnvelope = {
 export type ProjectDraftInput = {
   id?: string;
   name: string;
-  location: LocationDraft;
+  locations: ProjectLocationDraft[];
   unit: TemperatureUnit;
   tempMode: TemperatureMode;
   startDate: string;
@@ -182,6 +213,7 @@ export type ProjectDraftInput = {
   allowRangeGaps: boolean;
   preferredYarnBrandId?: string | null;
   recommendationMode: RecommendationMode;
+  colorScaleMode: ColorScaleMode;
   ranges?: TemperatureRangeColor[];
 };
 
@@ -197,6 +229,7 @@ export type ProjectExportBundle = {
   version: number;
   exportedAt: string;
   project: Project;
+  projectLocations: ProjectLocationAssignment[];
   ranges: TemperatureRangeColor[];
   temperatureDays: TemperatureDay[];
   progressRows: BuildProgressRow[];

@@ -2,12 +2,14 @@ import {
   AppData,
   PersistedAppEnvelope,
   Project,
+  ProjectLocationAssignment,
   TemperatureRangeColor,
   WeatherCacheEntry,
 } from "../types/models";
+import { findLocationForDate, getProjectLocations } from "./locations";
 import { fillBlankRangeLabels, mapTemperatureToRange, roundTemp } from "./temperature";
 
-export const APP_DATA_VERSION = 3;
+export const APP_DATA_VERSION = 4;
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -48,6 +50,7 @@ function normalizeProject(project: Record<string, unknown>): Project {
       project.recommendationMode === "manual-only"
         ? project.recommendationMode
         : "exact-nearest",
+    colorScaleMode: project.colorScaleMode === "per-location" ? "per-location" : "shared",
     weatherSource:
       project.weatherSource === "open-meteo" ||
       project.weatherSource === "mock" ||
@@ -68,6 +71,7 @@ function normalizeRange(range: Record<string, unknown>): TemperatureRangeColor {
   return {
     id: String(range.id ?? ""),
     projectId: String(range.projectId ?? ""),
+    projectLocationId: typeof range.projectLocationId === "string" ? range.projectLocationId : null,
     minTemp: Number(range.minTemp ?? 0),
     maxTemp: Number(range.maxTemp ?? 0),
     hexColor: String(range.hexColor ?? "#A98467"),
@@ -81,6 +85,25 @@ function normalizeRange(range: Record<string, unknown>): TemperatureRangeColor {
     lockedToRecommendedYarn: Boolean(range.lockedToRecommendedYarn),
     userOverrodeRecommendation: Boolean(range.userOverrodeRecommendation),
     sortOrder: Number(range.sortOrder ?? 0),
+  };
+}
+
+function normalizeProjectLocation(location: Record<string, unknown>): ProjectLocationAssignment {
+  return {
+    id: String(location.id ?? ""),
+    projectId: String(location.projectId ?? ""),
+    locationName: String(location.locationName ?? "Unknown location"),
+    latitude: Number(location.latitude ?? 0),
+    longitude: Number(location.longitude ?? 0),
+    startDate: String(location.startDate ?? ""),
+    endDate: String(location.endDate ?? ""),
+    sortOrder: Number(location.sortOrder ?? 0),
+    weatherSource:
+      location.weatherSource === "open-meteo" || location.weatherSource === "mock" ||
+      location.weatherSource === "cached" || location.weatherSource === "demo"
+        ? location.weatherSource : "demo",
+    weatherSourceLabel: String(location.weatherSourceLabel ?? "Demo data"),
+    weatherStatusMessage: typeof location.weatherStatusMessage === "string" ? location.weatherStatusMessage : null,
   };
 }
 
@@ -132,6 +155,21 @@ export function migrateAppData(raw: unknown): AppData {
     ? container.projects.filter(isObject).map(normalizeProject)
     : [];
 
+  const storedLocations = Array.isArray(container.projectLocations)
+    ? container.projectLocations.filter(isObject).map(normalizeProjectLocation)
+    : [];
+  const projectLocations = projects.flatMap((project) => {
+    const existing = getProjectLocations(project.id, storedLocations);
+    if (existing.length) return existing;
+    return [{
+      id: `${project.id}:location:1`, projectId: project.id,
+      locationName: project.locationName, latitude: project.latitude, longitude: project.longitude,
+      startDate: project.startDate, endDate: project.endDate, sortOrder: 0,
+      weatherSource: project.weatherSource, weatherSourceLabel: project.weatherSourceLabel,
+      weatherStatusMessage: project.weatherStatusMessage ?? null,
+    }];
+  });
+
   const ranges = Array.isArray(container.ranges)
     ? container.ranges.filter(isObject).map(normalizeRange)
     : [];
@@ -142,6 +180,7 @@ export function migrateAppData(raw: unknown): AppData {
         .map((day) => ({
           id: String(day.id ?? ""),
           projectId: String(day.projectId ?? ""),
+          projectLocationId: typeof day.projectLocationId === "string" ? day.projectLocationId : "",
           date: String(day.date ?? ""),
           tempHigh: toNullableNumber(day.tempHigh),
           tempLow: toNullableNumber(day.tempLow),
@@ -184,9 +223,16 @@ export function migrateAppData(raw: unknown): AppData {
       return day;
     }
 
+    const projectLocation = day.projectLocationId
+      ? projectLocations.find((location) => location.id === day.projectLocationId)
+      : findLocationForDate(day.date, getProjectLocations(day.projectId, projectLocations));
+    const projectLocationId = projectLocation?.id ?? "";
     const projectRanges = fillBlankRangeLabels(
       (rangeMapByProject.get(day.projectId) ?? []).sort((left, right) => left.sortOrder - right.sortOrder),
     );
+    const applicableRanges = project.colorScaleMode === "per-location"
+      ? projectRanges.filter((range) => range.projectLocationId === projectLocationId)
+      : projectRanges.filter((range) => range.projectLocationId === null);
     const sourceValue =
       project.tempMode === "high"
         ? day.tempHigh
@@ -194,10 +240,11 @@ export function migrateAppData(raw: unknown): AppData {
           ? day.tempLow
           : day.tempAvg;
     const selectedTemp = roundTemp(sourceValue);
-    const mappedRange = mapTemperatureToRange(selectedTemp, projectRanges);
+    const mappedRange = mapTemperatureToRange(selectedTemp, applicableRanges);
 
     return {
       ...day,
+      projectLocationId,
       selectedTemp,
       mappedRangeId: mappedRange?.id ?? null,
       mappedColor: mappedRange?.hexColor ?? null,
@@ -206,6 +253,7 @@ export function migrateAppData(raw: unknown): AppData {
 
   return {
     projects,
+    projectLocations,
     ranges,
     temperatureDays: remappedTemperatureDays,
     progressRows,

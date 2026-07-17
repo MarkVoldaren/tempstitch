@@ -1,5 +1,6 @@
 import {
   Project,
+  LocatedWeatherDayRecord,
   RangeValidationResult,
   TemperatureDay,
   TemperatureRangeColor,
@@ -77,18 +78,23 @@ export function fillBlankRangeLabels(ranges: TemperatureRangeColor[]) {
 
 export function applyRangesToDays(
   project: Project,
-  days: WeatherDayRecord[],
+  days: Array<WeatherDayRecord | LocatedWeatherDayRecord>,
   ranges: TemperatureRangeColor[],
 ) {
   const normalizedRanges = fillBlankRangeLabels(ranges);
 
   return days.map<TemperatureDay>((day) => {
+    const projectLocationId = "projectLocationId" in day ? day.projectLocationId : "";
+    const applicableRanges = project.colorScaleMode === "per-location"
+      ? normalizedRanges.filter((range) => range.projectLocationId === projectLocationId)
+      : normalizedRanges.filter((range) => range.projectLocationId === null);
     const selectedTemp = getSelectedTemperature(project, day);
-    const mappedRange = mapTemperatureToRange(selectedTemp, normalizedRanges);
+    const mappedRange = mapTemperatureToRange(selectedTemp, applicableRanges);
 
     return {
       id: `${project.id}:${day.date}`,
       projectId: project.id,
+      projectLocationId,
       date: day.date,
       tempHigh: roundTemp(day.tempHigh),
       tempLow: roundTemp(day.tempLow),
@@ -124,6 +130,7 @@ export function autoGenerateRanges(
   projectId: string,
   span: { min: number; max: number },
   bandCount = 8,
+  projectLocationId: string | null = null,
 ) {
   const bands = Math.max(1, bandCount);
   const width = Math.max(1, Math.ceil((span.max - span.min + 1) / bands));
@@ -149,6 +156,7 @@ export function autoGenerateRanges(
     return {
       id: `${projectId}:range:${index + 1}`,
       projectId,
+      projectLocationId,
       minTemp,
       maxTemp,
       hexColor: colors[index % colors.length],
